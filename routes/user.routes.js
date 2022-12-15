@@ -27,6 +27,20 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.post('/leaders', async (req, res) => {
+    try {
+        const users = await User.find();
+        const sortedUsers = [...users].sort(function(a, b) {
+            return b.points - a.points;
+        });
+
+        const result = sortedUsers.slice(0, 10)
+        res.status(201).json(result);
+    } catch (e) {
+        res.status(200).json(e.message);
+    }
+});
+
 router.post('/', async (req, res) => {
     try {
         const { id, firstName, lastName, personalNumber } = req.body;
