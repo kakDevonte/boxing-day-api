@@ -29,17 +29,56 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        const { id, firstName, lastName } = req.body;
-        console.log(req.body);
-        const user = new User({ id, firstName, lastName, tryCounter: 0, listQuestionsAnswered: [], points: 0, personalNumber: 0, isAuth: false });
+        const { id, firstName, lastName, personalNumber } = req.body;
+        const checkUser = await User.findOne({
+            id: id,
+        });
+        if (checkUser) {
+            return res.status(201).json(checkUser);
+        }
+        const user = new User({ id, firstName, lastName, tryCounter: 0, listQuestionsAnswered: [], points: 0, personalNumber, isAuth: true });
         await user.save();
-        res.status(201).json(user);
-        return;
+        return res.status(201).json(user);
+    } catch (e) {
+        return res.status(200).json(e.message);
+    }
+});
+
+router.get('/addTry/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        const user = await User.findOne({ id: id });
+        user.tryCounter += 1;
+        await user.save();
+        if(user) {
+            res.status(201).json(user);
+        } else {
+            res.status(201).json(false);
+        }
     } catch (e) {
         res.status(200).json(e.message);
     }
 });
+router.post('/addAnswer/', async (req, res) => {
+    try {
+        const { id, number, answer } = req.body;
+        const user = await User.findOne({ id: id });
+        user.tryCounter += 1;
+        user.listQuestionsAnswered.push(number);
+        if(answer) {
+            user.points += 1;
+        }
 
+        await user.save();
+        if(user) {
+            res.status(201).json(user);
+        } else {
+            res.status(201).json(false);
+        }
+    } catch (e) {
+        res.status(200).json(e.message);
+    }
+});
 router.put('/', async (req, res) => {
     try {
         const { id, firstName, lastName, timezone, responseTime } = req.body;

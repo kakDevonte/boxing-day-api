@@ -9,6 +9,10 @@ const schema = new Schema({
         type: String,
         require: true
     },
+    correct: {
+        type: Number,
+        require: true
+    },
     btn1: {
         type: String,
         require: true
@@ -25,6 +29,18 @@ const schema = new Schema({
         type: String,
         require: true
     },
+    description: {
+        type: String,
+        require: true
+    },
+    titleWin: {
+        type: String,
+        require: true
+    },
+    titleLose: {
+        type: String,
+        require: true
+    }
 });
 
 schema.set('toJSON', {
