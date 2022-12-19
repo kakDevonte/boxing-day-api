@@ -1,5 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cron = require('node-cron');
+const User = require("./models/User");
 const app = express();
 require('dotenv').config();
 
@@ -33,3 +35,8 @@ async function start() {
 }
 
 start();
+
+cron.schedule('* 0 * * *', async function() {
+    const users = await User.find();
+    users.updateMany({}, {$set: { tryCounter: 0 }},{ multi: true }).then(() => null);
+});
