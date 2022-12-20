@@ -95,14 +95,15 @@ router.post('/addAnswer/', async (req, res) => {
 });
 router.put('/', async (req, res) => {
     try {
-        const { id, firstName, lastName, timezone, responseTime } = req.body;
-        const oldUser = { id, firstName, lastName, timezone, responseTime };
-        await User.updateOne({ id: id }, oldUser);
-        const user = await User.findOne({ id: id });
-        res.status(201).json(user);
-        return;
-    } catch (error) {
-        res.status(200).json(error.message);
+        const { id, personalNumber } = req.body;
+
+        User.findOneAndUpdate({ id: id },
+            {$set:{ personalNumber: personalNumber }}, {new: true}).then((data) => {
+            res.status(201).json(data)
+        });
+
+    } catch (e) {
+        return res.status(200).json(e.message);
     }
 });
 
