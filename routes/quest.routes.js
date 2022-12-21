@@ -1,7 +1,5 @@
 const { Router } = require("express");
 const Quest = require("../models/Quest");
-const axios = require("axios");
-const FormData = require("form-data");
 const User = require("../models/User");
 
 const router = Router();
@@ -50,48 +48,23 @@ router.get("/:id", async (req, res) => {
         break;
       }
     }
-
-    // for(let i = 0; i < quests.length; i++) {
-    //   if(quests[i].number !== user.listQuestionsAnswered[i]){
-    //     result = quests[i]
-    //     break;
-    //   }
-    // }
-
     return res.status(201).json(result);
   } catch (e) {
     return res.status(200).json(e.message);
   }
 });
 
-router.post("/is-win", async (req, res) => {
+router.post('/create', async (req, res) => {
   try {
-    const { liveNumber, number, id, timezone } = req.body;
-    const quest = await Quest.findOne({
-      liveNumber: liveNumber,
-      number: number,
-      timezone: timezone,
-    });
+    const { number, text, correct, btn1, btn2, btn3, btn4, description, titleLose, titleWin } = req.body;
 
-    const user = quest.winners.find((user) => user.id === id);
+    const quest = new Quest(
+        { number, text, correct, btn1, btn2, btn3, btn4, description, titleLose, titleWin });
+    await quest.save();
 
-    if (user) {
-      res.status(201).json("win");
-      return;
-    } else {
-      const user = quest.answers.find((user) => user.id === id);
-      if (user) {
-        if (user.correct && user.isLate) {
-          res.status(201).json("so-close");
-          return;
-        } else {
-          res.status(201).json("lose");
-          return;
-        }
-      }
-    }
+    return res.status(201).json(true);
   } catch (e) {
-    res.status(200).json("lose");
+    return res.status(200).json(e.message);
   }
 });
 

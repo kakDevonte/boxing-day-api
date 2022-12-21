@@ -34,6 +34,22 @@ const schema = new Schema({
     type: Boolean,
     require: true
   },
+  isPublishedPost: {
+    type: Boolean,
+    require: true
+  },
+  isSubscribedGroup: {
+    type: Boolean,
+    require: true
+  },
+  linkToPost: {
+    type: String,
+    require: true
+  },
+  dateOfLastScore: {
+    type: String,
+    require: true
+  },
 });
 
 schema.set('toJSON', {

@@ -27,15 +27,20 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.post('/leaders', async (req, res) => {
+router.post('/leaders/:id', async (req, res) => {
     try {
+        const id = req.params.id;
         const users = await User.find();
         const sortedUsers = [...users].sort(function(a, b) {
             return b.points - a.points;
         });
 
-        const result = sortedUsers.slice(0, 10)
-        res.status(201).json(result);
+        const result = sortedUsers.slice(0, 10);
+
+        let index = sortedUsers.findIndex(user => user.id === parseInt(id));
+        let isOnList = result.some(user => user.id === parseInt(id));
+
+        res.status(201).json({result ,index, isOnList});
     } catch (e) {
         res.status(200).json(e.message);
     }
@@ -50,7 +55,13 @@ router.post('/', async (req, res) => {
         if (checkUser) {
             return res.status(201).json(checkUser);
         }
-        const user = new User({ id, firstName, lastName, tryCounter: 0, listQuestionsAnswered: [], points: 0, personalNumber, isAuth: true });
+        const user = new User(
+            { id, firstName, lastName,
+                tryCounter: 0, listQuestionsAnswered: [],
+                points: 0, personalNumber,
+                isAuth: true, isPublishedPost: false,
+                isSubscribedGroup: false, linkToPost: "",
+                dateOfLastScore: ""});
         await user.save();
         return res.status(201).json(user);
     } catch (e) {
@@ -81,6 +92,7 @@ router.post('/addAnswer/', async (req, res) => {
         user.listQuestionsAnswered.push(number);
         if(answer) {
             user.points += 1;
+            user.dateOfLastScore = new Date().toString();
         }
 
         await user.save();
@@ -99,6 +111,34 @@ router.put('/', async (req, res) => {
 
         User.findOneAndUpdate({ id: id },
             {$set:{ personalNumber: personalNumber }}, {new: true}).then((data) => {
+            res.status(201).json(data)
+        });
+
+    } catch (e) {
+        return res.status(200).json(e.message);
+    }
+});
+
+router.put('/post', async (req, res) => {
+    try {
+        const { id, linkToPost } = req.body;
+
+        User.findOneAndUpdate({ id: id },
+            {$set:{ linkToPost: linkToPost, isPublishedPost: true }}, {new: true}).then((data) => {
+            res.status(201).json(data)
+        });
+
+    } catch (e) {
+        return res.status(200).json(e.message);
+    }
+});
+
+router.put('/group', async (req, res) => {
+    try {
+        const { id, isSubscribedGroup } = req.body;
+
+        User.findOneAndUpdate({ id: id },
+            {$set:{ isSubscribedGroup: isSubscribedGroup }}, {new: true}).then((data) => {
             res.status(201).json(data)
         });
 
