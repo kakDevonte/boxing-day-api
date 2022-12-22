@@ -48,6 +48,7 @@ router.get("/:id", async (req, res) => {
         break;
       }
     }
+
     return res.status(201).json(result);
   } catch (e) {
     return res.status(200).json(e.message);

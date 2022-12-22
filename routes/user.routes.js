@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const User = require('../models/User');
+const easyvk = require('easyvk');
 
 const router = Router();
 
@@ -31,7 +32,11 @@ router.post('/leaders/:id', async (req, res) => {
     try {
         const id = req.params.id;
         const users = await User.find();
-        const sortedUsers = [...users].sort(function(a, b) {
+        const filterUsers = [...users].filter(function (el) {
+            return el.personalNumber !== 0;
+        });
+
+        const sortedUsers = filterUsers.sort(function(a, b) {
             return b.points - a.points;
         });
 
@@ -69,11 +74,12 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.get('/addTry/:id', async (req, res) => {
+router.post('/addTry/', async (req, res) => {
     try {
-        const id = req.params.id;
+        const { id, number } = req.body;
         const user = await User.findOne({ id: id });
         user.tryCounter += 1;
+        user.listQuestionsAnswered.push(number);
         await user.save();
         if(user) {
             res.status(201).json(user);
@@ -84,12 +90,12 @@ router.get('/addTry/:id', async (req, res) => {
         res.status(200).json(e.message);
     }
 });
+
 router.post('/addAnswer/', async (req, res) => {
     try {
-        const { id, number, answer } = req.body;
+        const { id, answer } = req.body;
         const user = await User.findOne({ id: id });
-        user.tryCounter += 1;
-        user.listQuestionsAnswered.push(number);
+        // user.tryCounter += 1;
         if(answer) {
             user.points += 1;
             user.dateOfLastScore = new Date().toString();
@@ -105,6 +111,22 @@ router.post('/addAnswer/', async (req, res) => {
         res.status(200).json(e.message);
     }
 });
+
+router.put('/', async (req, res) => {
+    try {
+        const { id, personalNumber } = req.body;
+
+        User.findOneAndUpdate({ id: id },
+            {$set:{ personalNumber: personalNumber }}, {new: true}).then((data) => {
+            res.status(201).json(data)
+        });
+
+    } catch (e) {
+        return res.status(200).json(e.message);
+    }
+});
+
+
 router.put('/', async (req, res) => {
     try {
         const { id, personalNumber } = req.body;
@@ -133,15 +155,27 @@ router.put('/post', async (req, res) => {
     }
 });
 
-router.put('/group', async (req, res) => {
+router.get('/subscribed/:id', async (req, res) => {
     try {
-        const { id, isSubscribedGroup } = req.body;
-
-        User.findOneAndUpdate({ id: id },
-            {$set:{ isSubscribedGroup: isSubscribedGroup }}, {new: true}).then((data) => {
-            res.status(201).json(data)
-        });
-
+        const id = req.params.id;
+        easyvk({
+            token: process.env.TOKEN
+        }).then(async vk => {
+            vk.call('groups.isMember', {
+                user_id: id,
+                group_id: 147189911,
+            }).then( data => {
+                const isSubscribe = data.getFullResponse().response;
+                if(isSubscribe) {
+                    User.findOneAndUpdate({id: id},
+                        {$set: {isSubscribedGroup: true}}, {new: true}).then((data) => {
+                        return res.status(201).json({isSubscribe: true, user: data })
+                    });
+                } else {
+                    return res.status(201).json({isSubscribe: false })
+                }
+            });
+        })
     } catch (e) {
         return res.status(200).json(e.message);
     }
