@@ -38,6 +38,6 @@ async function start() {
 start();
 
 cron.schedule('* 0 * * *', async function() {
-    const users = await User.find();
-    users.updateMany({}, {$set: { tryCounter: 0 }},{ multi: true }).then(() => null);
+    // const users = await User.find();
+    User.updateMany({}, {$set: { tryCounter: 0 }},{ multi: true }).then(() => null);
 });

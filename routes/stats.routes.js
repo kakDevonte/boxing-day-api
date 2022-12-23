@@ -4,6 +4,15 @@ const User = require("../models/User");
 
 const router = Router();
 
+router.get('/', async (req, res) => {
+    try {
+        const stats = await Stats.findOne();
+        return res.status(201).json(stats);
+    } catch (e) {
+        res.status(200).json(e.message);
+    }
+});
+
 router.get('/post', async (req, res) => {
     try {
         const stats = await Stats.findOne();

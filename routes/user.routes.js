@@ -172,7 +172,10 @@ router.get('/subscribed/:id', async (req, res) => {
                         return res.status(201).json({isSubscribe: true, user: data })
                     });
                 } else {
-                    return res.status(201).json({isSubscribe: false })
+                    User.findOneAndUpdate({id: id},
+                        {$set: {isSubscribedGroup: true}}, {new: true}).then((data) => {
+                        return res.status(201).json({isSubscribe: false, user: data })
+                    });
                 }
             });
         })
