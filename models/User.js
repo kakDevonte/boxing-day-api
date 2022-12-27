@@ -22,6 +22,10 @@ const schema = new Schema({
     type: Array,
     require: true
   },
+  questionStatistics: {
+    type: Array,
+    require: true
+  },
   points: {
     type: Number,
     require: true

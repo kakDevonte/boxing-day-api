@@ -93,11 +93,12 @@ router.post('/addTry/', async (req, res) => {
 
 router.post('/addAnswer/', async (req, res) => {
     try {
-        const { id, answer } = req.body;
+        const { id, answer, number } = req.body;
         const user = await User.findOne({ id: id });
         // user.tryCounter += 1;
         if(answer) {
             user.points += 1;
+            user.questionStatistics.push({ number: number, answer: answer});
             user.dateOfLastScore = new Date().toString();
         }
 
@@ -125,7 +126,6 @@ router.put('/', async (req, res) => {
         return res.status(200).json(e.message);
     }
 });
-
 
 router.put('/', async (req, res) => {
     try {
